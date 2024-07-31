@@ -16,17 +16,29 @@ Data is located in /projects/bgmp/shared/2017_sequencing/
 - Using ```$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_RX_001.fastq.gz | head -n400 | while read line; do echo ${#line}; done | sort -n | uniq -c``` on each file:
     - R1 & R4 have read lengths of 101 bp
     - R2 & R3 have read lengths of 8 bp
-
+- Calculated number of "N" reads in R2 & R3:
+```
+$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz | sed -n '2~4p' | grep -E -c "N"
+3976613
+$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz | sed -n '2~4p' | grep -E -c "N"
+3328051
+```
 ### Next Steps
-
+- Write and run Q-score distribution script
 ---
 
-## Date: YYYY-MM-DD
-
-### Objective
+## Date: 2024-07-30
 
 ### Methods
-
+- Completed and ran Q-score distribution script:
+```
+Command being timed: "python Qdists.py"
+	User time (seconds): 28964.86
+	System time (seconds): 17.25
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 8:07:41
+```
+- Figures were output to ```.../Assignment-the-first```
 ### Next Steps
 
 ---

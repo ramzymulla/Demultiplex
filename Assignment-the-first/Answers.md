@@ -14,11 +14,24 @@
     1. Use markdown to insert your 4 histograms here.
     2. **YOUR ANSWER HERE**
     3. **YOUR ANSWER HERE**
-    
+
+```
+$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz | sed -n '2~4p' | grep -E -c "N"
+3976613
+$ zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz | sed -n '2~4p' | grep -E -c "N"
+3328051
+```
 ## Part 2
 1. Define the problem
+```
+Problem is to take 4 FASTQ files (2 biological reads, 2 index reads) and do the following: (1) incorporate index reads to the header lines of all biological reads in the format "index1-index2" and (2) write all biological reads (with the new headers) into new FASTQ files according to their indices.
+```
 2. Describe output
+```
+The expected output is 52 FASTQ files—2 for each of the 24 valid index pairs, plus 2 for index-hopped reads, and 2 for unknown reads (indices below the Q-score cutoff or containing "N" reads)
+```
 3. Upload your [4 input FASTQ files](../TEST-input_FASTQ) and your [>=6 expected output FASTQ files](../TEST-output_FASTQ).
+
 4. Pseudocode
 5. High level functions. For each function, be sure to include:
     1. Description/doc string

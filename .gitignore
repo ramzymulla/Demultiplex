@@ -11,6 +11,9 @@
 !TEST-input_FASTQ/*
 !TEST-output_FASTQ/*
 
+# slurm logs
+*logs/
+
 # vscode
 .vscode/
 
