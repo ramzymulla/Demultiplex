@@ -40,16 +40,15 @@ Command being timed: "python Qdists.py"
 ```
 - Figures were output to ```.../Assignment-the-first```
 ### Next Steps
-
+- Create unit test files
+- Fill out Answers.md
 ---
 
-## Date: YYYY-MM-DD
-
-### Objective
+## Date: 2024-08-01
 
 ### Methods
-
-### Next Steps
-
----
-
+- Wrote "test.py" to automate finding suitable FASTQ records to use in the unit tests
+    - Kept it at four records (1 ihop, 1 match, 1 N-containing barcode, and 1 otherwise low Q-score)
+    - Also provided opportunity to make sure my demultiplex.py functions and looping strategy are working (they are!)
+- Looked over the resulting files to confirm by-eye that each case was correctly identified and the output records were correctly formatted
+- Filled out Answers.md and pushed final changes to github
