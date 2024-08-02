@@ -35,12 +35,22 @@ def revcomp(seq: str) -> str:
         rc+=bi.DNA_COMPS[c]
     return rc
 
+def get_record(file) -> tuple:
+    header=file.readline().strip()
+    if header=='':
+        return 0,0,0
+    seq = file.readline().strip()
+    file.readline()
+    qscore=file.readline().strip()
+    return header,seq,qscore
+
 def get_indices(file:str)->list:
     barcodes = []
     with open(file,'r') as f:
         line = f.readline().strip().split()
         while line:
             barcodes.append(line[-1])
+            line = f.readline().strip().split()
     return barcodes
 
 def check_qscore(qscores: str,cutoff:int)->bool:
@@ -80,36 +90,31 @@ gzip.open(path+args.fname4,'rt') as R4:
     handles = [R1,R2,R3,R4]
     
     while True:
-        header1 = R1.readline().strip() 
-        if header1 == "": break
-        header2 = R4.readline().strip()
-        read1 = R1.readline().strip()
-        read2 = R4.readline().strip()
-        R2.readline()
-        R3.readline()
-        bar1 = R2.readline().strip()
-        bar2_rc = R3.readline().strip()
-        bar2 = revcomp(bar2_rc) # type: ignore
-        fullbar = f"{bar1}-{bar2}"
-        header1 = f"{header1} {fullbar}"
-        header2 = f"{header2} {fullbar}"
-        for f in handles:
-            f.readline()
-        qual1 = R2.readline().strip()
-        qual2 = R3.readline().strip()
-        R2.readline()
-        R3.readline()
-        record1 = f"{header1}\n{read1}\n+\n{qual1}"
-        record2 = f"{header2}\n{read2}\n+\n{qual2}"
+        hr1,sr1,qr1=get_record(R1)
+        if hr1==0: break
+        hi1,si1,qi1=get_record(R2)
+        hi2,si2_rc,qi2_r=get_record(R3)
+        hr2,sr2,qr2=get_record(R4)
 
-        if (fullbar not in known_pairs) or\
-            (not check_qscore(qual1,q_cutoff)) or\ # type: ignore
-            (not check_qscore(qual2,q_cutoff)): # type: ignore
+        si2 = revcomp(si2_rc)
+        qi2 = qi2_r[::-1]
+
+        bar = f"{si1}-{si2}"
+
+        h1 = f"{hr1} {bar}"
+        h4 = f"{hr2} {bar}"
+
+        record1 = f"{hr1}\n{sr1}\n{qr1}"
+        record2 = f"{hr2}\n{sr2}\n{qr2}"
+
+        if (bar not in known_pairs) or\
+            (not check_qscore(qi1,q_cutoff)) or\ # type: ignore
+            (not check_qscore(qi2,q_cutoff)): # type: ignore
             unknowns+=1
-            if fullbar not in index_pairs:
-                index_pairs[fullbar]=1
+            if bar not in index_pairs:
+                index_pairs[bar]=1
             else:
-                index_pairs[fullbar]+=1
+                index_pairs[bar]+=1
             if unknowns ==1: 
                 r1_outs['unknowns'].write(record1)
                 r2_outs['unknowns'].write(record2)
@@ -117,25 +122,80 @@ gzip.open(path+args.fname4,'rt') as R4:
                 r1_outs['unknowns'].write("\n"+record1)
                 r2_outs['unknowns'].write("\n"+record2)
             
-        elif bar1==bar2:
+        elif si1==si2:
             matches+=1
-            index_pairs[fullbar]+=1
+            index_pairs[bar]+=1
             if matches==1:
-                r1_outs[fullbar].write(record1)
-                r2_outs[fullbar].write(record2)
+                r1_outs[bar].write(record1)
+                r2_outs[bar].write(record2)
             else:
                 r1_outs['matches'].write("\n"+record1)
                 r2_outs['matches'].write("\n"+record2)
-
         else:
             ihops+=1
-            index_pairs[fullbar]+=1
+            index_pairs[bar]+=1
             if ihops==1:
                 r1_outs['ihops'].write(record1)
                 r2_outs['ihops'].write(record2)
             else:
                 r1_outs['ihops'].write("\n"+record1)
                 r2_outs['ihops'].write("\n"+record2)
+
+        # header1 = R1.readline().strip() 
+        # if header1 == "": break
+        # header2 = R4.readline().strip()
+        # read1 = R1.readline().strip()
+        # read2 = R4.readline().strip()
+        # R2.readline()
+        # R3.readline()
+        # bar1 = R2.readline().strip()
+        # bar2_rc = R3.readline().strip()
+        # bar2 = revcomp(bar2_rc) # type: ignore
+        # fullbar = f"{bar1}-{bar2}"
+        # header1 = f"{header1} {fullbar}"
+        # header2 = f"{header2} {fullbar}"
+        # for f in handles:
+        #     f.readline()
+        # qual1 = R2.readline().strip()
+        # qual2 = R3.readline().strip()
+        # R2.readline()
+        # R3.readline()
+        # record1 = f"{header1}\n{read1}\n+\n{qual1}"
+        # record2 = f"{header2}\n{read2}\n+\n{qual2}"
+
+        # if (fullbar not in known_pairs) or\
+        #     (not check_qscore(qual1,q_cutoff)) or\ # type: ignore
+        #     (not check_qscore(qual2,q_cutoff)): # type: ignore
+        #     unknowns+=1
+        #     if fullbar not in index_pairs:
+        #         index_pairs[fullbar]=1
+        #     else:
+        #         index_pairs[fullbar]+=1
+        #     if unknowns ==1: 
+        #         r1_outs['unknowns'].write(record1)
+        #         r2_outs['unknowns'].write(record2)
+        #     else:
+        #         r1_outs['unknowns'].write("\n"+record1)
+        #         r2_outs['unknowns'].write("\n"+record2)
+            
+        # elif bar1==bar2:
+        #     matches+=1
+        #     index_pairs[fullbar]+=1
+        #     if matches==1:
+        #         r1_outs[fullbar].write(record1)
+        #         r2_outs[fullbar].write(record2)
+        #     else:
+        #         r1_outs['matches'].write("\n"+record1)
+        #         r2_outs['matches'].write("\n"+record2)
+        # else:
+        #     ihops+=1
+        #     index_pairs[fullbar]+=1
+        #     if ihops==1:
+        #         r1_outs['ihops'].write(record1)
+        #         r2_outs['ihops'].write(record2)
+        #     else:
+        #         r1_outs['ihops'].write("\n"+record1)
+        #         r2_outs['ihops'].write("\n"+record2)
 
 for f in r1_outs: r1_outs[f].close()
 for f in r2_outs: r2_outs[f].close()
