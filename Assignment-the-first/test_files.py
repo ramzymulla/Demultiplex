@@ -57,14 +57,14 @@ t5 = open('./Test-output_FASTQ/testRecord1.fastq','w')
 t6 = open('./Test-output_FASTQ/testRecord2.fastq','w')
 outfiles=[t1,t2,t3,t4,t5,t6]
 first=True
+num_recs=1
 with gzip.open(path+fnames[0],'rt') as R1,\
 gzip.open(path+fnames[1],'rt') as R2,\
 gzip.open(path+fnames[2],'rt') as R3,\
 gzip.open(path+fnames[3],'rt') as R4:
     
     handles = [R1,R2,R3,R4]
-    
-    while not (match and ihop and unknown and lowq):
+    while match<num_recs or ihop<num_recs or unknown<num_recs or lowq<num_recs:
         hr1,sr1,qr1=get_record(R1)
         if hr1==0: break
         hi1,si1,qi1=get_record(R2)
@@ -82,7 +82,7 @@ gzip.open(path+fnames[3],'rt') as R4:
         record2 = f"{hn2}\n{sr2}\n+\n{qr2}"
 
         if 'N' in bar:
-            if unknown<5:
+            if unknown<num_recs:
                 if first:
                     first=False
                 else:
@@ -90,14 +90,27 @@ gzip.open(path+fnames[3],'rt') as R4:
                 print(f"unknown:\n{record1}\n{record2}\n\n")
                 t1.write(f"{hr1}\n{sr1}\n+\n{qr1}")
                 t2.write(f"{hi1}\n{si1}\n+\n{qi1}")
-                t3.write(f"{hi2}\n{si2}\n+\n{qi2}")
+                t3.write(f"{hi2}\n{si2_rc}\n+\n{qi2_r}")
                 t4.write(f"{hr2}\n{sr2}\n+\n{qr2}")
                 t5.write(f"{record1}")
                 t6.write(f"{record2}")
                 unknown +=1
-
+        elif bar not in known_pairs:
+            if unknown<num_recs:
+                if first:
+                    first=False
+                else:
+                    for t in outfiles: t.write("\n")
+                print(f"unknown:\n{record1}\n{record2}\n\n")
+                t1.write(f"{hr1}\n{sr1}\n+\n{qr1}")
+                t2.write(f"{hi1}\n{si1}\n+\n{qi1}")
+                t3.write(f"{hi2}\n{si2_rc}\n+\n{qi2_r}")
+                t4.write(f"{hr2}\n{sr2}\n+\n{qr2}")
+                t5.write(f"{record1}")
+                t6.write(f"{record2}")
+                unknown +=1
         elif not check_qscore(qi1+qi2,30):
-            if lowq < 5:
+            if lowq < num_recs:
                 if first:
                     first=False
                 else:
@@ -105,13 +118,13 @@ gzip.open(path+fnames[3],'rt') as R4:
                 print(f"lowq:\n{record1}\n{record2}\n\n")
                 t1.write(f"{hr1}\n{sr1}\n+\n{qr1}")
                 t2.write(f"{hi1}\n{si1}\n+\n{qi1}")
-                t3.write(f"{hi2}\n{si2}\n+\n{qi2}")
+                t3.write(f"{hi2}\n{si2_rc}\n+\n{qi2_r}")
                 t4.write(f"{hr2}\n{sr2}\n+\n{qr2}")
                 t5.write(f"{record1}")
                 t6.write(f"{record2}")
                 lowq+=1
         elif si1!=si2:
-            if ihop <5:
+            if ihop <num_recs:
                 if first:
                     first=False
                 else:
@@ -119,13 +132,13 @@ gzip.open(path+fnames[3],'rt') as R4:
                 print(f"ihop:\n{record1}\n{record2}\n\n")
                 t1.write(f"{hr1}\n{sr1}\n+\n{qr1}")
                 t2.write(f"{hi1}\n{si1}\n+\n{qi1}")
-                t3.write(f"{hi2}\n{si2}\n+\n{qi2}")
+                t3.write(f"{hi2}\n{si2_rc}\n+\n{qi2_r}")
                 t4.write(f"{hr2}\n{sr2}\n+\n{qr2}")
                 t5.write(f"{record1}")
                 t6.write(f"{record2}")
                 ihop+=1
         
-        elif match < 5:
+        elif match < num_recs:
             if first:
                 first=False
             else:
@@ -133,7 +146,7 @@ gzip.open(path+fnames[3],'rt') as R4:
             print(f"match:\n{record1}\n{record2}\n\n")
             t1.write(f"{hr1}\n{sr1}\n+\n{qr1}")
             t2.write(f"{hi1}\n{si1}\n+\n{qi1}")
-            t3.write(f"{hi2}\n{si2}\n+\n{qi2}")
+            t3.write(f"{hi2}\n{si2_rc}\n+\n{qi2_r}")
             t4.write(f"{hr2}\n{sr2}\n+\n{qr2}")
             t5.write(f"{record1}")
             t6.write(f"{record2}")

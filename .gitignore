@@ -11,6 +11,9 @@
 !TEST-input_FASTQ/*
 !TEST-output_FASTQ/*
 
+# ignore incorrect unit tests
+TEST-input_FASTQ/sub*
+
 # slurm logs
 *logs/
 
