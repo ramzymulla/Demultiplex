@@ -13,6 +13,10 @@
 
 # ignore incorrect unit tests
 TEST-input_FASTQ/sub*
+*test_outputs_try*
+*dplexer_outputs*
+qscorer.py
+qscores.txt
 
 # slurm logs
 *logs/

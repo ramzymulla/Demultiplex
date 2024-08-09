@@ -56,12 +56,12 @@ def convert_phred(letter: str, offset: int=33) -> int:
     """
     return ord(letter)-offset
 
-def qual_score(phred_score: str) -> float:
+def qual_score(phred_score: str,enc=33) -> float:
     """takes a string of phred+33 ASCII symbols and returns the average quality score"""
-    sum = 0
-    for i in range(len(phred_score)): 
-        sum += convert_phred(phred_score[i])
-    return sum/len(phred_score)
+    num = 0
+    for i in phred_score: 
+        num += convert_phred(i,offset=enc)
+    return num/len(phred_score)
 
 def validate_base_seq(seq: str, RNAflag: bool=False) -> bool:
     '''This function takes a string. Returns True if string is composed
