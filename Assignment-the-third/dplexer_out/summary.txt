@@ -1,3 +1,4 @@
+Total Reads: 363246735
 Total Matched Reads: 304980270 (83.96%)
 Total Index-Hopped Reads: 517612 (0.14%)
 Total Unknown Reads: 57748853 (15.9%)
