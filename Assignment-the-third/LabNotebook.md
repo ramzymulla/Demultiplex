@@ -38,6 +38,71 @@
 - Made bash script ```demultiplexer.sh``` to for doing my sbatches
 - Submitted real run to sbatch, with outputs directed to ```./Assignment-the-third/dplexer_outputs/```
 ### Next Steps
-
+- Clean up file directory
+- Make Answers.md
+- Push final repository
 ---
 
+## Date: 2024-08-08~12
+NOTE: My code worked without issue on the first run, but I did some extra optimizing for nerd reasons, so I am consolidating those changes in one block for August 8 through 12
+### Methods
+- sbatch output fit expected outcomes (total read counts match total records in og files)
+    - read counts/percentages roughly match up to those of my peers
+```
+Command being timed: "python demultiplex.py -q 30 -1 1294_S1_L008_R1_001.fastq.gz -2 1294_S1_L008_R2_001.fastq.gz -3 1294_S1_L008_R3_001.fastq.gz -4 1294_S1_L008_R4_001.fastq.gz -i ../Assignment-the-first/indexes.txt -p /projects/bgmp/shared/2017_sequencing/ -o ./dplexer_outputs/"
+	User time (seconds): 8295.45
+	System time (seconds): 54.57
+	Percent of CPU this job got: 92%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:30:21
+```
+```
+Total Matched Reads: 303645222 (83.59%)
+Total Index-Hopped Reads: 513040 (0.14%)
+Total Unknown Reads: 59088473 (16.27%)
+Total Reads Below Cutoff: 28304511 (7.79%)
+```
+- I got very annoyed with how long my code took to run, so I began trying to optimize my code by:
+    - Creating a revcomp dictionary to more quickly convert known indices, only using the actual revcomp() function for unknown indices (ie. not in indexes.txt)
+    - Switching the order of if statements to use "in [dict/set]" as much as possible, only calculating qual_scores when absolutely necessary
+- My code was still taking very long to run. After 4+ runs with various changes, I realized that my check_qscore()function was extremely bad. Fixing it got my run time down to under 60 minutes. 
+
+Before
+```py
+def check_qscore(qscores: str,cutoff:int)->bool:
+    mean = np.mean([bi.qual_score(i) for i in qscores])
+    return bool(mean > cutoff)
+```
+After
+```py
+def check_qscore(qscores: str,cutoff:int,enc=33)->bool:
+    num = 0                                     # initialize accumulator
+    for i in qscores:
+        num += bi.convert_phred(i,offset=enc)   # convert each character and add to num
+    return num/len(qscores) >= cutoff
+```
+```
+	Command being timed: "python demultiplex.py -q 30 -1 1294_S1_L008_R1_001.fastq.gz -2 1294_S1_L008_R2_001.fastq.gz -3 1294_S1_L008_R3_001.fastq.gz -4 1294_S1_L008_R4_001.fastq.gz -i ../Assignment-the-first/indexes.txt -p /projects/bgmp/shared/2017_sequencing/ -o ./dplexer_out/"
+	User time (seconds): 2853.00
+	System time (seconds): 54.13
+	Percent of CPU this job got: 91%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 53:02.28
+```
+- Along the way, I also decided to make some additional changes, which included switch check_qscores() to ">=" instead of strictly ">". I think this fits more with the spirit of the term "cutoff". 
+    - Also switched so it writes the per-base counts to stats.txt instead of just printing it
+- Predictably, this impacted the final output:
+```
+Before:
+Total Matched Reads: 303645222 (83.59%)
+Total Index-Hopped Reads: 513040 (0.14%)
+Total Unknown Reads: 59088473 (16.27%)
+Total Reads Below Cutoff: 28304511 (7.79%)
+
+After:
+Total Reads: 363246735
+Total Matched Reads: 304980270 (83.96%)
+Total Index-Hopped Reads: 517612 (0.14%)
+Total Unknown Reads: 57748853 (15.9%)
+Total Reads Below Cutoff: 26964891 (7.42%)
+```
+
+- Once I was happy with the runtime, I wrote up my Answers.md, added in-line comments to demultiplex.py, cleaned up the directory, and pushed the final repository to github
